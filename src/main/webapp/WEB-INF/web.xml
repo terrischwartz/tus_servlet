@@ -1,0 +1,36 @@
+<web-app id="WebApp_9" xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+	http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+
+	<display-name>TUS Upload Servlet</display-name>
+
+	<filter>
+		<filter-name>MethodOverrideFilter</filter-name>
+		<filter-class>org.tus.filter.methodoverride.HttpMethodOverrideFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>MethodOverrideFilter</filter-name>
+		<servlet-name>upload</servlet-name>
+	</filter-mapping>
+
+	<servlet>
+		<servlet-name>upload</servlet-name>
+		<servlet-class> org.tus.servlet.upload.Upload </servlet-class>
+		<init-param>
+			<param-name>targetDirectory</param-name>
+			<param-value>/foo</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>upload</servlet-name>
+		<url-pattern>/upload/*</url-pattern>
+	</servlet-mapping>
+
+	<session-config>
+		<session-timeout>-1</session-timeout>
+	</session-config>
+
+</web-app>

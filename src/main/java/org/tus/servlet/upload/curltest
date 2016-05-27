@@ -1,0 +1,25 @@
+# curl -X POST -i 'http://localhost:7070/restusers/upload' -H 'Tus-Resumable: 1.0.0'  
+
+curl -X POST -i 'http://localhost:7070/restusers/upload' -H 'Tus-Resumable: 1.0.0'  -H 'Upload-Length: 2204' 
+exit
+
+
+export URL=http://localhost:7070/restusers/upload/9ad6b4e9_1336_4c85_83a7_aa0d68786508
+
+echo "Doing a HEAD, then PATCH, then HEAD"
+
+curl -X HEAD -i "$URL" -H 'Tus-Resumable: 1.0.0'  
+
+echo
+echo
+
+curl -X PATCH -i "$URL" \
+	-H 'Tus-Resumable: 1.0.0'  \
+	-H 'Upload-Offset: 0' \
+	-H 'Content-Type: application/offset+octet-stream' \
+	--upload-file ./Upload.java 
+
+echo
+echo
+
+curl -X HEAD -i "$URL" -H 'Tus-Resumable: 1.0.0'  
