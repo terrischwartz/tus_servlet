@@ -8,10 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
 /*
-	In struts.xml, I told struts to exclude /upload/[0-9a-zA-Z]* so this servlet
-	should only see uris of the form /upload or /upload/123foo , but nothing with
-	special characters or deeper paths.  Also had to tell web.xml to send urls
-	starting with /upload here.
+	The servlet_path is configured in servlet mapping in web.xml. 
+	If using this servlet in a struts application, in struts.xml tell struts
+	to exclude "/servlet_path/[0-9a-zA-Z]*".
+	This servlet should only see uris of the form /servlet_path or /servlet_path/123foo , but nothing with
+	special characters or deeper paths.  
 
 */
 public class Upload extends HttpServlet 
@@ -36,16 +37,6 @@ public class Upload extends HttpServlet
 		{
 			log.debug("UPLOAD SERVLET " + request.getMethod() + " " + request.getRequestURL());
 
-			/*
-			String method = request.getHeader("x-http-method-override");
-			if (method != null)
-			{
-				method = method.toUpperCase();
-			} else
-			{
-				method = request.getMethod();
-			}
-			*/
 			MethodHandler handler = composer.methodHandlers.get(request.getMethod());
 			if (handler == null)
 			{
@@ -64,15 +55,19 @@ public class Upload extends HttpServlet
 		{
 			log.error("", e);
 			send(response, 500, (e.getMessage()  == null) ? "Server Error" : "Server Error: " + e.getMessage());
-			// or is it better to throw a servlet exception?  What if there are filters called after this?
 		}
 	}
 
 	private void send(HttpServletResponse response, int status, String text)
 		throws IOException
 	{
+		response.setStatus(status);
 		PrintWriter out = response.getWriter();
-		out.print(text + "\n");
+		if (text.length() > 1)
+		{
+			text += "\n";
+		}
+		out.print(text);
 	}
 
 }

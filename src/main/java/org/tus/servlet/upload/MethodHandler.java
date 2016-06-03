@@ -116,15 +116,7 @@ public class MethodHandler
 		throws IOException
 	{
 		PrintWriter out = response.getWriter();
-		try
-		{
-			out.print(body);
-		}
-		finally
-		{
-			// TODO: close or not?
-			// out.close();
-		}
+		out.print(body);
 	}
 
 	/*
@@ -133,20 +125,22 @@ public class MethodHandler
 	*/
 	public String getFilename(HttpServletRequest request)
 	{
-		String servletPath = request.getServletPath();
-		String url = request.getRequestURL().toString();
-		log.debug("url is:" + url + ", servletPath is:" + servletPath);
-
-		// TODO: This is wrong if servletPath has trailing slash 
-		Pattern pattern = Pattern.compile(servletPath + "/(\\w+)/?");
-		Matcher matcher = pattern.matcher(url);
-		if (!matcher.find())
+		String pathInfo= request.getPathInfo();
+		log.debug("pathInfo is:" + pathInfo );
+		if (pathInfo == null)
+		{
+			return null;
+		}
+		// Matches file ID consisting of letters, digits and underscores with optional trailing slash
+		Pattern pattern = Pattern.compile("/(\\w+)/?");
+		Matcher matcher = pattern.matcher(pathInfo);
+		if (!matcher.matches())
 		{
 			log.debug("URL doesn't have form of an upload endpoint."); 
 			return null;
 		}
 		String filename = matcher.group(1);
-		log.debug("filename is:" + filename);
+		log.debug("file ID is:" + filename);
 		return filename;
 	}
 }

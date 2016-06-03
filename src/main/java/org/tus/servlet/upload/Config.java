@@ -20,7 +20,7 @@ public class Config
 	// Maximum size of a single upload. 0 means unlimited.
 	long maxSize = 0L;
 
-	// Folder where data will be stored.  Must be pre-existing.
+	// Folder where data will be stored.  Must already exist.
 	String uploadFolder = "/tmp";
 
 
