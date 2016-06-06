@@ -23,12 +23,16 @@ public class Config
 	// Maximum total storage space to use.  0 means unlimited (or different policy in use). 
 	long MAX_STORAGE = 0L;
 
+	// Server can limit number of bytes it will accept in a single patch request.  0 means unlimited.
+	long MAX_REQUEST = 0L;
+
 	// Folder where data will be stored.  Must already exist.
 	String UPLOAD_FOLDER = "/tmp";
 
-	long maxSize;
-	long maxStorage;
-	String uploadFolder;
+	final long maxSize;
+	final long maxStorage;
+	final long maxRequest;
+	final String uploadFolder;
 
 
 	public Config(ServletConfig sc) throws ServletException
@@ -36,11 +40,8 @@ public class Config
 		String tmp;
 		Long l; 
 
-		uploadFolder = sc.getInitParameter("uploadFolder");
-		if (uploadFolder == null)
-		{
-			uploadFolder = UPLOAD_FOLDER;
-		}
+		tmp = sc.getInitParameter("uploadFolder");
+		uploadFolder = (tmp == null)? UPLOAD_FOLDER : tmp;
 		File file = new File(uploadFolder);
 		if (!file.isDirectory() || !file.canWrite() || !file.canRead())
 		{
@@ -55,7 +56,11 @@ public class Config
 		l = getLongValue(sc.getInitParameter("maxStorage"));
 		maxStorage = (l == null) ? MAX_STORAGE : l;
 
-		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage);
+		l = getLongValue(sc.getInitParameter("maxRequest"));
+		maxRequest = (l == null) ? MAX_REQUEST : l;
+
+		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage +
+			", maxRequest=" + maxRequest);
 	}
 
 	public static Long getLongValue(String text) throws ServletException

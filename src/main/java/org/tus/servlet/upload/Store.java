@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 class Store implements Datastore
 {
 	private static final Logger log = LoggerFactory.getLogger(Store.class.getName());
-	private static final String BIN_PATH = "/tmp";
-	private static final String INFO_PATH = "/tmp";
+
+	private final String binPath;
+	private final String infoPath;
+	private final long maxRequest;
 	
 	private Config config;
 
@@ -25,13 +27,13 @@ class Store implements Datastore
 	*/
 	private static String extensions = "creation,expiration";
 
-	// For testing, only accept 1000 bytes at a time.
-	// private static long MAX_COUNT = 1000L;
-	private static long MAX_COUNT = 0L;
 
 	Store(Config config)
 	{
 		this.config = config;
+		binPath = config.uploadFolder;
+		infoPath = config.uploadFolder;
+		maxRequest = config.maxRequest;
 	}
 
 	@Override
@@ -102,10 +104,9 @@ class Store implements Datastore
 		RandomAccessFile raf = new RandomAccessFile(getBinPath(filename), "rw"); // throws if file doesn't exist
 		FileChannel dest = raf.getChannel();
 
-		// We may set a lower limit, in MAX_COUNT, for each patch than what client sends.
-		if (MAX_COUNT > 0 && MAX_COUNT < max)
+		if (maxRequest > 0 && maxRequest < max)
 		{
-			max = MAX_COUNT;
+			max = maxRequest;
 		}
 
 		/*
@@ -177,12 +178,12 @@ class Store implements Datastore
 
 	private String getBinPath(String filename)
 	{
-		return BIN_PATH + File.separator + filename + ".bin";
+		return binPath + File.separator + filename + ".bin";
 	}
 	
 	private String getInfoPath(String filename)
 	{
-		return INFO_PATH + File.separator + filename + ".info";
+		return infoPath + File.separator + filename + ".info";
 	}
 
 
