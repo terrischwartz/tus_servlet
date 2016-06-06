@@ -18,24 +18,62 @@ public class Config
 	String[] tusApiExtensions = {"creation", "termination"};
 
 	// Maximum size of a single upload. 0 means unlimited.
-	long maxSize = 0L;
+	long MAX_SIZE = 0L;
+
+	// Maximum total storage space to use.  0 means unlimited (or different policy in use). 
+	long MAX_STORAGE = 0L;
 
 	// Folder where data will be stored.  Must already exist.
-	String uploadFolder = "/tmp";
+	String UPLOAD_FOLDER = "/tmp";
+
+	long maxSize;
+	long maxStorage;
+	String uploadFolder;
 
 
-	/*
-		TODO: override default values with those from servlet config
-		Call getInitParameter() to get parameters from web.xml
-	*/
 	public Config(ServletConfig sc) throws ServletException
 	{
-		String msg;
+		String tmp;
+		Long l; 
+
+		uploadFolder = sc.getInitParameter("uploadFolder");
+		if (uploadFolder == null)
+		{
+			uploadFolder = UPLOAD_FOLDER;
+		}
 		File file = new File(uploadFolder);
 		if (!file.isDirectory() || !file.canWrite() || !file.canRead())
 		{
-			msg = "Upload directory: " + uploadFolder + " must exist and be readable and writable";
-			log.error(msg);
+			tmp = "Upload directory: " + uploadFolder + " must exist and be readable and writable";
+			log.error(tmp);
+			throw new ServletException(tmp);
+		}
+
+		l = getLongValue(sc.getInitParameter("maxFileSize"));
+		maxSize = (l == null) ? MAX_SIZE : l;
+
+		l = getLongValue(sc.getInitParameter("maxStorage"));
+		maxStorage = (l == null) ? MAX_STORAGE : l;
+
+		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage);
+	}
+
+	public static Long getLongValue(String text) throws ServletException
+	{
+		String msg;
+		if (text == null)
+		{
+			return null;
+		}
+		Long value = null;
+		try
+		{
+			value = new  Long(text);
+			return value;
+		}
+		catch(NumberFormatException ne)
+		{
+			msg = "Parameter must be a long.  Error parsing: " + text;
 			throw new ServletException(msg);
 		}
 	}

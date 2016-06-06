@@ -18,8 +18,16 @@
 		<servlet-name>upload</servlet-name>
 		<servlet-class> org.tus.servlet.upload.Upload </servlet-class>
 		<init-param>
-			<param-name>targetDirectory</param-name>
-			<param-value>/foo</param-value>
+			<param-name>uploadFolder</param-name>
+			<param-value>/tmp</param-value>
+		</init-param>
+		<init-param>
+			<param-name>maxFileSize</param-name>
+			<param-value>0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>maxStorage</param-name>
+			<param-value>0</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
