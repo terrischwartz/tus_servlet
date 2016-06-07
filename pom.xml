@@ -80,6 +80,17 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+			<!-- exclude log4j.xml from the jar that this pom creates -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<excludes>
+						<exclude>**/log4j.xml</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 
 		</plugins>
 	</build>
