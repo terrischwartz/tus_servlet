@@ -65,7 +65,7 @@ $ mvn install
 <!-- The tus_servlet itself: -->
 <dependency>
     <groupId>org.tus</groupId>
-    <artifactId>tus_servlet</artifactId> <filter>
+    <artifactId>tus_servlet</artifactId>
     <version>0.1-SNAPSHOT</version>
 </dependency>
 
@@ -108,7 +108,8 @@ $ mvn install
 
 ### Add the filter and servlet to web.xml 
 ```
-    <filter-name>MethodOverrideFilter</filter-name>
+    <filter>
+    	<filter-name>MethodOverrideFilter</filter-name>
         <filter-class>org.tus.filter.methodoverride.HttpMethodOverrideFilter</filter-class>
     </filter>
     <filter-mapping>
@@ -120,9 +121,17 @@ $ mvn install
         <servlet-name>upload</servlet-name>
         <servlet-class> org.tus.servlet.upload.Upload </servlet-class>
         <!-- More info about init-params below -->
-        <init-param>
-            <param-name>targetDirectory</param-name>
+		<init-param>
+            <param-name>uploadFolder</param-name>
             <param-value>/tmp</param-value>
+        </init-param>
+        <init-param>
+            <param-name>maxFileSize</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>maxStorage</param-name>
+            <param-value>0</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
