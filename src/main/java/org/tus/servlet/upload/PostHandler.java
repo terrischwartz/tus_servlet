@@ -43,9 +43,9 @@ public class PostHandler extends MethodHandler
 
 		String metadata = request.getHeader("Upload-Metadata");
 
-		// This generates a unique id to serve as the filename.
+		// Generate unique id to serve as the file ID and store optional metadata.
 		FileInfo fileInfo = new FileInfo((long)length, metadata);
-		log.debug("New file info id = " + fileInfo.id);
+
 
 		// Can throw exception which will result in 500 status to client.
 		datastore.create(fileInfo);

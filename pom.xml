@@ -76,8 +76,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+					<!-- servlet uses base64 encode/decode included in java 8 -->
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
 			<!-- exclude log4j.xml from the jar that this pom creates -->

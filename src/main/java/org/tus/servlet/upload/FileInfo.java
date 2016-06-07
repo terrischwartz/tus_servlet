@@ -1,8 +1,9 @@
 package org.tus.servlet.upload;
- 
 
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
@@ -25,6 +26,7 @@ public class FileInfo
 	public String id;
 	public long offset = -1;
 	public String metadata;
+	public Map<String, String> decodedMetadata;
 
 	// This ctor is used by post method to create the FileInfo
 	public FileInfo(long entityLength, String metadata)
@@ -33,6 +35,15 @@ public class FileInfo
 		this.id = UUID.randomUUID().toString();
 		this.id = this.id.replace("-", "_");
 		this.metadata = metadata;
+		this.decodedMetadata = parseMetadata(metadata);
+
+		// See if client sent suggested filename in metadata and log it.
+		String suggestedFilename = decodedMetadata.get("filename");
+		if (suggestedFilename == null)
+		{
+			suggestedFilename = "none";
+		}
+		log.debug("New file ID = " + id + ", filename=" + suggestedFilename); 
 	}
 
 	// This is used by jackson to deserialize from file
@@ -40,4 +51,43 @@ public class FileInfo
 	{
 	}
 
+	/*
+		Metadata is transmitted as comma separated key/value pairs, where
+		key and value are separated by a space and value is base64 encoded.
+		TODO: not sure if it's url safe, mime safe or std base64.  Currently
+		using url safe.
+
+	*/
+	Map<String, String> parseMetadata(String metadata)
+	{
+		HashMap<String,String> map = new HashMap<String, String>();
+		if (metadata == null)
+		{
+			return map;
+		}
+		String[] pairs = metadata.split(",");
+		for (int i = 0; i < pairs.length; i++)
+		{
+			String[] element = pairs[i].trim().split(" ");
+			if (element.length != 2)
+			{
+				log.warn("Ignoring metadata element:'" + pairs[i] + "'");
+				continue;
+			}
+			String key = element[0];
+			byte[] value;
+			try
+			{
+				value = Base64.getUrlDecoder().decode(element[1]);
+			} 
+			catch(IllegalArgumentException iae)
+			{
+				log.warn("Invalid encoding of metadata element:'" + pairs[i] + "'");
+				continue;
+			}
+			map.put(key, new String(value));
+		}
+		return map;
+	}
 }
+
