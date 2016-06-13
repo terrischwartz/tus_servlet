@@ -104,7 +104,7 @@ class Store implements Datastore
 		RandomAccessFile raf = new RandomAccessFile(getBinPath(filename), "rw"); // throws if file doesn't exist
 		FileChannel dest = raf.getChannel();
 
-		if (maxRequest > 0 && maxRequest < max)
+		if (maxRequest > 0L && maxRequest < max)
 		{
 			max = maxRequest;
 		}
