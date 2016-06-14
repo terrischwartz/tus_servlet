@@ -2,33 +2,30 @@ package org.tus.servlet.upload;
  
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
 /*
 	Send current offset in upload or 404
 */
-public class HeadHandler extends MethodHandler 
+public class HeadHandler extends BaseHandler 
 {
 	private static final Logger log = LoggerFactory.getLogger(HeadHandler.class.getName());
 
-	public HeadHandler(Config config, Locker locker, Datastore datastore)
+	public HeadHandler(Composer composer, HttpServletRequest request, Response response)
 	{
-		super(config, locker, datastore);
+		super(composer, request, response);
 	}
 
-
 	@Override
-	public boolean go(HttpServletRequest request, HttpServletResponse response)
-		throws Exception
+	public void go() throws Exception
 	{
-		super.go(request, response);
-		String filename = getFilename(request);
+		String filename = getFilename();
 		if (filename == null)
 		{
 			log.debug("url has no valid filename part");
-			return send(request, response, 404, "");
+			throw new TusException.NotFound();
 		}
 		boolean locked = false;
 		try
@@ -36,12 +33,10 @@ public class HeadHandler extends MethodHandler
 			locked = locker.lockUpload(filename);
 			if (!locked)
 			{
-				// todo: other locking errors?  Have locker return an obj with error? 
-				// can't send error message in body when request is HEAD.  423 = LOCKED
 				log.info("Couldn't lock " + filename);
-				return send(request, response, 423, "");
+				throw new TusException.FileLocked();
 			}
-			return whileLocked(request, response, filename);
+			whileLocked(filename);
 		}
 		finally
 		{
@@ -53,14 +48,14 @@ public class HeadHandler extends MethodHandler
 
 	}
 
-	private boolean whileLocked(HttpServletRequest request, HttpServletResponse response, String filename)
+	private void whileLocked(String filename)
 		throws Exception
 	{
 		FileInfo fileInfo = datastore.getFileInfo(filename);
 		if (fileInfo == null)
 		{
-			log.debug("filename not found");
-			return send(request, response, 404, "");
+			log.debug("filename '" + filename + "' not found");
+			throw new TusException.NotFound();
 		}
 
 		if (fileInfo.metadata != null && fileInfo.metadata.length() > 0)
@@ -70,7 +65,6 @@ public class HeadHandler extends MethodHandler
 		response.setHeader("Cache-Control", "no-store");
 		response.setHeader("Upload-Length", Long.toString(fileInfo.entityLength));
 		response.setHeader("Upload-Offset", Long.toString(fileInfo.offset));
-		// 204 = NO CONTENT
-		return send(request, response, 204, "");
+		response.setStatus(Response.NO_CONTENT);
 	}
 }

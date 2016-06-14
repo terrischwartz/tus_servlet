@@ -1,13 +1,12 @@
 package org.tus.servlet.upload;
- 
 
 import java.io.File;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
  
 public class Config
 {
@@ -29,38 +28,76 @@ public class Config
 	// Folder where data will be stored.  Must already exist.
 	String UPLOAD_FOLDER = "/tmp";
 
-	final long maxSize;
-	final long maxStorage;
-	final long maxRequest;
-	final String uploadFolder;
+	long maxSize;
+	long maxStorage;
+	long maxRequest;
+	String uploadFolder;
 
 
-	public Config(ServletConfig sc) throws ServletException
+	public Config() throws ServletException 
+	{
+		this(new Properties());
+	}
+
+	public Config(Properties properties) throws ServletException 
+	{
+		init(properties);
+		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage +
+			", maxRequest=" + maxRequest);
+	}
+
+	private void init(Properties properties) throws ServletException
 	{
 		String tmp;
 		Long l; 
 
-		tmp = sc.getInitParameter("uploadFolder");
+		tmp = properties.getProperty("uploadFolder");
 		uploadFolder = (tmp == null)? UPLOAD_FOLDER : tmp;
-		File file = new File(uploadFolder);
+		validateFolder(uploadFolder);
+
+		l = getLongValue(properties.getProperty("maxFileSize"));
+		maxSize = (l == null) ? MAX_SIZE : l;
+
+		l = getLongValue(properties.getProperty("maxStorage"));
+		maxStorage = (l == null) ? MAX_STORAGE : l;
+
+		l = getLongValue(properties.getProperty("maxRequest"));
+		maxRequest = (l == null) ? MAX_REQUEST : l;
+	}
+
+
+    public Config(ServletConfig sc) throws ServletException 
+    {
+		Properties properties = new Properties();
+		if (sc.getInitParameter("uploadFolder") != null)
+		{
+			properties.setProperty("uploadFolder", sc.getInitParameter("uploadFolder"));
+		}
+        if (sc.getInitParameter("maxFileSize") != null )
+		{
+			properties.setProperty("maxFileSize", sc.getInitParameter("maxFileSize"));
+		}
+        if (sc.getInitParameter("maxStorage") != null )
+		{
+			properties.setProperty("maxStorage", sc.getInitParameter("maxStorage"));
+		}
+        if (sc.getInitParameter("maxRequest") != null )
+		{
+			properties.setProperty("maxRequest", sc.getInitParameter("maxRequest"));
+		}
+		init(properties);
+   	} 
+	
+	void validateFolder(String folder) throws ServletException
+	{
+		String tmp;
+		File file = new File(folder);
 		if (!file.isDirectory() || !file.canWrite() || !file.canRead())
 		{
-			tmp = "Upload directory: " + uploadFolder + " must exist and be readable and writable";
+			tmp = "Upload directory: " + folder + " must exist and be readable and writable";
 			log.error(tmp);
 			throw new ServletException(tmp);
 		}
-
-		l = getLongValue(sc.getInitParameter("maxFileSize"));
-		maxSize = (l == null) ? MAX_SIZE : l;
-
-		l = getLongValue(sc.getInitParameter("maxStorage"));
-		maxStorage = (l == null) ? MAX_STORAGE : l;
-
-		l = getLongValue(sc.getInitParameter("maxRequest"));
-		maxRequest = (l == null) ? MAX_REQUEST : l;
-
-		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage +
-			", maxRequest=" + maxRequest);
 	}
 
 	public static Long getLongValue(String text) throws ServletException

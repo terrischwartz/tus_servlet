@@ -1,0 +1,14 @@
+ + e.getMessage());
+			// or is it better to throw a servlet exception?  What if there are filters called after this?
+		}
+	}
+
+	private void send(HttpServletResponse response, int status, String text)
+		throws IOException
+	{
+		PrintWriter out = response.getWriter();
+		out.print(text + "\n");
+	}
+
+}
+

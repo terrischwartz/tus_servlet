@@ -1,27 +1,34 @@
-package org.tus.servlet.upload;
- 
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
  
-public class OptionsHandler extends MethodHandler 
+/*
+	The TUSD implementation says this about why it returns 200 instead of 204:
+		Although the 204 No Content status code is a better fit in this case,
+		since we do not have a response body included, we cannot use it here
+		as some browsers only accept 200 OK as successful response to a
+		preflight request. If we send them the 204 No Content the response
+		will be ignored or interpreted as a rejection.
+		For example, the Presto engine, which is used in older versions of
+		Opera, Opera Mobile and Opera Mini, handles CORS this way.package org.tus.servlet.upload;
+		 
+
+*/
+public class OptionsHandler extends BaseHandler 
 {
+	@SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(PostHandler.class.getName());
 
-	public OptionsHandler(Config config, Locker locker, Datastore datastore)
+	public OptionsHandler(Composer composer, HttpServletRequest request, Response response)
 	{
-		super(config, locker, datastore);
+		super(composer, request, response);
 	}
 
-	@Override
-	public boolean go(HttpServletRequest request, HttpServletResponse response)
-		throws Exception
-	{
-		super.go(request, response);
 
+	@Override
+	public void go() throws Exception
+	{
 		if (datastore.getExtensions() != null)
 		{
 			response.setHeader("Tus-Extension", datastore.getExtensions());
@@ -30,6 +37,6 @@ public class OptionsHandler extends MethodHandler
 		{
 			response.setHeader("Tus-Max-Size", Long.toString(config.maxSize));
 		}
-		return send(request, response, 200, "");
+		response.setStatus(Response.OK);
 	}
 }

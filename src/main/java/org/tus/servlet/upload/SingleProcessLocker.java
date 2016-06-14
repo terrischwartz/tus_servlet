@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 */
 class  SingleProcessLocker implements Locker
 {
+	@SuppressWarnings("unused")
+	private static final Logger log = LoggerFactory.getLogger(SingleProcessLocker.class.getName());
 	private HashSet<String> pool = new HashSet<String>();
 
 	/* 

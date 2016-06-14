@@ -6,10 +6,13 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+
 import javax.servlet.http.HttpServletRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
  
 class Store implements Datastore
 {
@@ -19,8 +22,6 @@ class Store implements Datastore
 	private final String infoPath;
 	private final long maxRequest;
 	
-	private Config config;
-
 	/*
 		The creation extension has an optional feature that we don't yet support.
 		When we do we'll add creation-defer-length to the list of extensions. 
@@ -30,7 +31,6 @@ class Store implements Datastore
 
 	Store(Config config)
 	{
-		this.config = config;
 		binPath = config.uploadFolder;
 		infoPath = config.uploadFolder;
 		maxRequest = config.maxRequest;

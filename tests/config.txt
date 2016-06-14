@@ -1,0 +1,4 @@
+export TUS_URL='http://localhost:8080/files'
+# export TUS_URL=http://master.tus.io:8080/files/
+# export TUS_URL='http://localhost:7070/restusers/files'
+# export TUS_URL='http://localhost:7070/cipresrest/v1/files'
