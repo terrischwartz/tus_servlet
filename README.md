@@ -150,5 +150,5 @@ If using the servlet in a struts app, you'll need to configure struts.xml to ign
 ### Configuration (web.xml init-param)
 * **uploadFolder** - Absolute pathname of the directory to which files will be uploaded.  Directory must already exist.
 * **maxFileSize** - Maxiumum number of bytes allowed for a single file.  0 means unlimited.
-* ** maxStorage** = Maximum number of bytes this servlet will use for uploaded files.  0 means unlimited.  *NOT IMPLEMENTED*
+* **maxStorage** = Maximum number of bytes this servlet will use for uploaded files.  0 means unlimited.  *NOT IMPLEMENTED*
 * **maxRequest** - Maximum number of bytes server will accept in a single patch request.  0 means unlimited.
