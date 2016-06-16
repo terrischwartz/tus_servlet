@@ -165,7 +165,7 @@ Session based authentication may be appropriate if you're adding the tus_servlet
 In the simplest case, you're using container based authentication (e.g. tomcat-users.xml and security-constraint in web.xml) and all you need to do is make sure the servlet's url and the url of the form that calls the servlet are covered by a security-constraint. 
 
 #### Custom Programatic Authentication
-Many web applications use custom authentication code and store the name of the authenticated user in a HttpSession attribute.  In this case you may find the provided SessionAuth filter useful.  The filter stops requests from reaching the servlet when the user isn't authenticated by returning a 401 UNAUTHORIZED response. When there is an authenticated user, the filter populates the HttpServletRequest user Principal object so that the servlet knows which user is uploading.  
+Many web applications use custom authentication code and store the name of the user in a HttpSession attribute but don't make the username available in HttpServletRequest.getUserPrincipal().  In this case you may find the provided SessionAuth filter useful.  The filter stops requests from reaching the servlet when the user isn't authenticated by returning a 401 UNAUTHORIZED response. When there is an authenticated user, the filter populates the HttpServletRequest user Principal object so that the servlet knows which user is uploading.  
 To use the filter, create a class that implements org.tus.filter.auth.PrincipalManager.  For example: 
 ```java
 package org.mystuff;
