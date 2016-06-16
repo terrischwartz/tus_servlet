@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,8 @@ public class Upload extends HttpServlet
 		Response response = new Response(servletResponse);
 		try
 		{
-			log.debug("UPLOAD SERVLET " + request.getMethod() + " " + request.getRequestURL());
+			log.debug("UPLOAD SERVLET " + request.getMethod() + " " + request.getRequestURL() + ". User = " +
+				getAuthenticatedUser(request));
 
 			checkVersion(request, response);
 
@@ -77,6 +79,23 @@ public class Upload extends HttpServlet
 				"Server Error" : "Server Error: " + e.getMessage());
 		}
 		send(request, response);
+	}
+
+	/*
+		User authentication, if needed, is handled outside of the servlet and the information 
+		is passed to the servlet via the request.getUserPrincipal().  If a user has been 
+		authenticated, request.getUserPrincipal will be non null will contain the user's name.   
+		Usually, when using authentication, a filter is configured to prevent the servlet 
+		from running if a user hasn't logged in..
+	*/
+	String getAuthenticatedUser(HttpServletRequest request)
+	{
+		Principal principal = request.getUserPrincipal();
+		if (principal != null)
+		{
+			return principal.getName();
+		} 
+		return null;
 	}
 
 	private void checkVersion(HttpServletRequest request, Response response)
