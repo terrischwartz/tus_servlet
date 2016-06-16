@@ -61,7 +61,7 @@ $ mvn install
 ```
 
 ### Add the dependency to pom.xml 
-```
+```xml
 <!-- The tus_servlet itself: -->
 <dependency>
     <groupId>org.tus</groupId>
@@ -69,8 +69,7 @@ $ mvn install
     <version>0.1-SNAPSHOT</version>
 </dependency>
 
-<!-- The tus_servlet uses these jars:  -->
-<!-- for json marshaling -->
+<!-- The tus_servlet uses these jars for json marshaling:  -->
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-core</artifactId>
@@ -86,7 +85,7 @@ $ mvn install
     <artifactId>jackson-annotations</artifactId>
     <version>2.6.3</version>
 </dependency>
-<!-- for jackson json marshaling -->
+<!-- end for json marshaling -->
 
 <!-- slf4j for logging -->
 <dependency>
@@ -107,7 +106,7 @@ $ mvn install
 ```
 
 ### Add the filter and servlet to web.xml 
-```
+```xml
     <filter>
     	<filter-name>MethodOverrideFilter</filter-name>
         <filter-class>org.tus.filter.methodoverride.HttpMethodOverrideFilter</filter-class>
@@ -147,8 +146,56 @@ If using the servlet in a struts app, you'll need to configure struts.xml to ign
 <constant name="struts.action.excludePattern" value="/files,/files/[0-9a-zA-Z_]*"/>
 ```
 
-### Configuration (web.xml init-param)
+## Configuration (web.xml init-param)
 * **uploadFolder** - Absolute pathname of the directory to which files will be uploaded.  Directory must already exist.
 * **maxFileSize** - Maxiumum number of bytes allowed for a single file.  0 means unlimited.
 * **maxStorage** - Maximum number of bytes this servlet will use for uploaded files.  0 means unlimited.  *NOT IMPLEMENTED.*
 * **maxRequest** - Maximum number of bytes server will accept in a single patch request.  0 means unlimited.
+
+
+## Authentication
+Authentication is normally handled outside of servlet and the authenticated user, if any,
+is passed to the servlet in HttpServletRequest.getUserPrincipal().
+
+
+### Session Based Authentication
+Session based authentication may be appropriate if you're adding the tus_servlet to a web application that already uses login sessions and you want to restrict uploading to logged in users.  
+
+#### Servlet Container Authentication 
+In the simplest case, you're using container based authentication (e.g. tomcat-users.xml and security-constraint in web.xml) and all you need to do is make sure the servlet's url and the url of the form that calls the servlet are covered by a security-constraint. 
+
+#### Custom Programatic Authentication
+Many web applications use custom authentication code and store the name of the authenticated user in a HttpSession attribute.  In this case you may find the provided SessionAuth filter useful.  The filter stops requests from reaching the servlet when the user isn't authenticated by returning a 401 UNAUTHORIZED response. When there is an authenticated user, the filter populates the HttpServletRequest user Principal object so that the servlet knows which user is uploading.  
+To use the filter, create a class that implements org.tus.filter.auth.PrincipalManager.  For example: 
+```java
+package org.mystuff;
+
+import javax.servlet.http.HttpSession;
+import org.tus.filter.auth.PrincipalManager;
+
+public class UserBridge implements PrincipalManager
+{
+    @Override
+    public String getUser(HttpSession session)
+    {
+        return (String)session.getAttribute("USERNAME");
+    }
+}
+```
+
+
+and add the following to web.xml, replacing the value of the init-param "principalManager"  with the name of your class:
+```xml
+<filter>
+    <filter-name>SessionAuth</filter-name>
+    <filter-class>org.tus.filter.auth.SessionAuth</filter-class>
+    <init-param>
+        <param-name>principalManager.class</param-name>
+        <param-value>org.mystuff.UserBridge</param-value>
+    </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>SessionAuth</filter-name>
+    <servlet-name>upload</servlet-name>
+</filter-mapping>
+``` 
