@@ -1,12 +1,12 @@
 package org.tus.servlet.upload;
  
 import java.io.IOException;
+import java.security.Principal;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.Principal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,8 @@ public class Upload extends HttpServlet
 	private static final Logger log = LoggerFactory.getLogger(Upload.class.getName());
 	private Config config;
 	private Composer composer;
+	private boolean doTermination;
+	private boolean doCreation;
 
 	@Override
 	public void init() throws ServletException
@@ -35,6 +37,8 @@ public class Upload extends HttpServlet
 		log.debug("Initialize Upload servlet");
 		config = new Config(getServletConfig());
 		composer = new Composer(config);
+		doTermination = composer.datastore.getExtensions().contains("termination");
+		doCreation = composer.datastore.getExtensions().contains("creation");
 	}
 
 	@Override
@@ -59,10 +63,14 @@ public class Upload extends HttpServlet
 			} else if (method.equals("PATCH"))
 			{
 				new PatchHandler(composer, request, response).go();
-			} else if (method.equals("POST"))
+			} else if (method.equals("POST") && doCreation)
 			{
 				new PostHandler(composer, request, response).go();
-			} else
+			} else if (method.equals("DELETE") && doTermination)
+			{
+				new DeleteHandler(composer, request, response).go();
+			}
+			else
 			{
 				log.info("Method " + request.getMethod() + " not allowed.");
 				throw new TusException.MethodNotAllowed();

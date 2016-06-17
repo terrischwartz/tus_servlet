@@ -33,4 +33,9 @@ interface Datastore
 	*/
 	public void saveFileInfo(FileInfo fileInfo) throws Exception;
 
+	/*
+		Delete partial or complete upload in response to a DELETE request.	
+	*/
+	public void terminate(String filename) throws Exception;
+
 }

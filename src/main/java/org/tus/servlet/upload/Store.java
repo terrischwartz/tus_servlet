@@ -22,11 +22,7 @@ class Store implements Datastore
 	private final String infoPath;
 	private final long maxRequest;
 	
-	/*
-		The creation extension has an optional feature that we don't yet support.
-		When we do we'll add creation-defer-length to the list of extensions. 
-	*/
-	private static String extensions = "creation,expiration";
+	private static String extensions = "creation,termination";
 
 
 	Store(Config config)
@@ -142,6 +138,18 @@ class Store implements Datastore
 			}
 			log.debug("finished with write");
 		}
+	}
+
+	/*
+		Remove partial or complete upload.
+		TODO: periodically look for bfiles w/o corresponding ifile and delete them
+		for any cases where we've crashed between delete if ifile and bfile.
+	*/
+	@Override
+	public void terminate(String filename) throws Exception
+	{
+		new File(getInfoPath(filename)).delete();
+		new File(getBinPath(filename)).delete();
 	}
 
 	/*

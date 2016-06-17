@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  
 public class PatchHandler extends BaseHandler 
 {
-	private static final Logger log = LoggerFactory.getLogger(PostHandler.class.getName());
+	private static final Logger log = LoggerFactory.getLogger(PatchHandler.class.getName());
 
 	public PatchHandler(Composer composer, HttpServletRequest request, Response response)
 	{
