@@ -55,6 +55,20 @@ public class Upload extends HttpServlet
 	}
 
 	@Override
+	public void destroy()
+	{
+		try
+		{
+			composer.datastore.destroy();
+			super.destroy();
+		}
+		catch(Exception e)
+		{
+			log.error("", e);
+		}
+	}
+
+	@Override
 	public void service(HttpServletRequest request, HttpServletResponse servletResponse)
 		throws IOException, ServletException 
 	{
