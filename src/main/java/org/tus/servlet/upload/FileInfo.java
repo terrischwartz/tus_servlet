@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 /*
 	Todo: 
-		- may add owner id field
+		- how does jackson marshal fields with null values?
 */
 /*
 		- POST method writes this object to disk
@@ -26,23 +26,22 @@ public class FileInfo
 	public String id;
 	public long offset = -1;
 	public String metadata;
+	public String suggestedFilename;
+	public String username;
 	public Map<String, String> decodedMetadata;
 
 	// This ctor is used by post method to create the FileInfo
-	public FileInfo(long entityLength, String metadata)
+	public FileInfo(long entityLength, String metadata, String username)
 	{
 		this.entityLength = entityLength;
 		this.id = UUID.randomUUID().toString();
 		this.id = this.id.replace("-", "_");
 		this.metadata = metadata;
 		this.decodedMetadata = parseMetadata(metadata);
+		this.username = username;
 
 		// See if client sent suggested filename in metadata and log it.
-		String suggestedFilename = decodedMetadata.get("filename");
-		if (suggestedFilename == null)
-		{
-			suggestedFilename = "none";
-		}
+		this.suggestedFilename = decodedMetadata.get("filename");
 		log.debug("New file ID = " + id + ", filename=" + suggestedFilename); 
 	}
 

@@ -13,11 +13,19 @@ public class Composer
 	Locker locker;
 
 
-	public Composer(Config config)
+	public Composer(Config config) throws Exception
 	{
 		this.config = config;
 
 		locker = new SingleProcessLocker();
-		datastore = new Store(config);
+
+		if (config.datastoreProvider != null)
+		{
+			datastore = (Datastore)Class.forName(config.datastoreProvider).getConstructor().newInstance();
+		} else
+		{
+			datastore = new Store();
+		}
+		datastore.init(config);
 	}
 }

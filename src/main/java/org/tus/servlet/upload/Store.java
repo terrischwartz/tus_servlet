@@ -14,23 +14,36 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
  
-class Store implements Datastore
+/*
+	Different types of stores may be created by extending this store, hence
+	the "protected" declarations.
+*/
+public class Store implements Datastore
 {
-	private static final Logger log = LoggerFactory.getLogger(Store.class.getName());
+	protected static final Logger log = LoggerFactory.getLogger(Store.class.getName());
 
-	private final String binPath;
-	private final String infoPath;
-	private final long maxRequest;
+	protected  String binPath;
+	protected  String infoPath;
+	protected  long maxRequest;
 	
-	private static String extensions = "creation,termination";
+	protected static String extensions = "creation,termination";
 
 
-	Store(Config config)
+	
+
+	@Override
+	public void init(Config config) throws Exception
 	{
 		binPath = config.uploadFolder;
 		infoPath = config.uploadFolder;
 		maxRequest = config.maxRequest;
 	}
+
+	@Override
+	public void destroy() throws Exception
+	{
+	}
+
 
 	@Override
 	public String getExtensions()
@@ -184,20 +197,17 @@ class Store implements Datastore
 		
 	}
 
-	private String getBinPath(String filename)
+	@Override
+	public void finish(String filename) throws Exception { ; } 
+
+	protected String getBinPath(String filename)
 	{
 		return binPath + File.separator + filename + ".bin";
 	}
 	
-	private String getInfoPath(String filename)
+	protected String getInfoPath(String filename)
 	{
 		return infoPath + File.separator + filename + ".info";
 	}
-
-
-
-
-
-
 
 }

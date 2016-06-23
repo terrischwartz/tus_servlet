@@ -38,7 +38,7 @@ public class PostHandler extends BaseHandler
 		String metadata = request.getHeader("Upload-Metadata");
 
 		// Generate unique id to serve as the file ID and store optional metadata.
-		FileInfo fileInfo = new FileInfo((long)length, metadata);
+		FileInfo fileInfo = new FileInfo((long)length, metadata, Upload.getAuthenticatedUser(request));
 
 		datastore.create(fileInfo);
 

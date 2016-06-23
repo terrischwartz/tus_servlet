@@ -2,8 +2,15 @@ package org.tus.servlet.upload;
 
 import javax.servlet.http.HttpServletRequest;
 
-interface Datastore
+/*
+	A single instance of the  datastore will be created.
+*/
+public interface Datastore
 {
+	/*
+		Initialize the datastore service
+	*/
+	public void init(Config config) throws Exception;
 
 	/*
 		Return list of extensions supported by this datastore.
@@ -37,5 +44,16 @@ interface Datastore
 		Delete partial or complete upload in response to a DELETE request.	
 	*/
 	public void terminate(String filename) throws Exception;
+
+
+	/*
+		If there's any work to do when the upload is finished, this is where it's done. 
+	*/
+	public void finish(String filename) throws Exception;
+
+	/*
+		Shutdown the datastore service
+	*/
+	public void destroy() throws Exception;
 
 }

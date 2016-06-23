@@ -107,10 +107,10 @@ public class PatchHandler extends BaseHandler
 			if (newOffset == fileInfo.entityLength)
 			{
 				log.debug("Upload " + filename + " is complete.");
+				datastore.finish(filename);
 			}
 		} 
 		response.setHeader("Upload-Offset", Long.toString(newOffset));
 		response.setStatus(Response.NO_CONTENT);
 	}
-
 }

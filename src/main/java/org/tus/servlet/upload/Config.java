@@ -32,6 +32,7 @@ public class Config
 	long maxStorage;
 	long maxRequest;
 	String uploadFolder;
+	String datastoreProvider;
 
 
 	public Config() throws ServletException 
@@ -42,8 +43,6 @@ public class Config
 	public Config(Properties properties) throws ServletException 
 	{
 		init(properties);
-		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage +
-			", maxRequest=" + maxRequest);
 	}
 
 	private void init(Properties properties) throws ServletException
@@ -63,6 +62,10 @@ public class Config
 
 		l = getLongValue(properties.getProperty("maxRequest"));
 		maxRequest = (l == null) ? MAX_REQUEST : l;
+
+		datastoreProvider = properties.getProperty("datastoreProvider");
+		log.info("uploadFolder=" + uploadFolder + ", maxFileSize=" + maxSize + ", maxStorage=" + maxStorage +
+			", maxRequest=" + maxRequest + ", datastoreProvider=" + datastoreProvider);
 	}
 
 
@@ -85,6 +88,10 @@ public class Config
 		{
 			properties.setProperty("maxRequest", sc.getInitParameter("maxRequest"));
 		}
+        if (sc.getInitParameter("datastoreProvider") != null )
+		{
+			properties.setProperty("datastoreProvider", sc.getInitParameter("datastoreProvider"));
+		}
 		init(properties);
    	} 
 	
@@ -100,7 +107,7 @@ public class Config
 		}
 	}
 
-	public static Long getLongValue(String text) throws ServletException
+	Long getLongValue(String text) throws ServletException
 	{
 		String msg;
 		if (text == null)

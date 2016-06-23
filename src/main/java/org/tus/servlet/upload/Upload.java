@@ -35,10 +35,23 @@ public class Upload extends HttpServlet
 	public void init() throws ServletException
 	{
 		log.debug("Initialize Upload servlet");
-		config = new Config(getServletConfig());
-		composer = new Composer(config);
-		doTermination = composer.datastore.getExtensions().contains("termination");
-		doCreation = composer.datastore.getExtensions().contains("creation");
+		try
+		{
+			config = new Config(getServletConfig());
+			composer = new Composer(config);
+			doTermination = composer.datastore.getExtensions().contains("termination");
+			doCreation = composer.datastore.getExtensions().contains("creation");
+		}
+		catch(ServletException se)
+		{
+			log.error("", se);
+			throw se;
+		}
+		catch(Exception e)
+		{
+			log.error("", e);
+			throw new ServletException(e);
+		}
 	}
 
 	@Override
@@ -96,7 +109,7 @@ public class Upload extends HttpServlet
 		Usually, when using authentication, a filter is configured to prevent the servlet 
 		from running if a user hasn't logged in..
 	*/
-	String getAuthenticatedUser(HttpServletRequest request)
+	public static String getAuthenticatedUser(HttpServletRequest request)
 	{
 		Principal principal = request.getUserPrincipal();
 		if (principal != null)
