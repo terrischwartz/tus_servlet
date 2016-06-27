@@ -21,40 +21,40 @@ public class HeadHandler extends BaseHandler
 	@Override
 	public void go() throws Exception
 	{
-		String filename = getFilename();
-		if (filename == null)
+		String id = getID();
+		if (id == null)
 		{
-			log.debug("url has no valid filename part");
+			log.debug("url has no valid id part");
 			throw new TusException.NotFound();
 		}
 		boolean locked = false;
 		try
 		{
-			locked = locker.lockUpload(filename);
+			locked = locker.lockUpload(id);
 			if (!locked)
 			{
-				log.info("Couldn't lock " + filename);
+				log.info("Couldn't lock " + id);
 				throw new TusException.FileLocked();
 			}
-			whileLocked(filename);
+			whileLocked(id);
 		}
 		finally
 		{
 			if (locked)
 			{
-				locker.unlockUpload(filename);
+				locker.unlockUpload(id);
 			}
 		}
 
 	}
 
-	private void whileLocked(String filename)
+	private void whileLocked(String id)
 		throws Exception
 	{
-		FileInfo fileInfo = datastore.getFileInfo(filename);
+		FileInfo fileInfo = datastore.getFileInfo(id);
 		if (fileInfo == null)
 		{
-			log.debug("filename '" + filename + "' not found");
+			log.debug("id '" + id + "' not found");
 			throw new TusException.NotFound();
 		}
 

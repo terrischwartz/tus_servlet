@@ -26,6 +26,6 @@ public class Composer
 		{
 			datastore = new Store();
 		}
-		datastore.init(config);
+		datastore.init(config, locker);
 	}
 }

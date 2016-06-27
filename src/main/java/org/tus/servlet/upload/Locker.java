@@ -1,7 +1,7 @@
 package org.tus.servlet.upload;
  
  
-interface Locker
+public interface Locker
 {
 	/* 
 		Returns true if able to lock name without waiting.  False if

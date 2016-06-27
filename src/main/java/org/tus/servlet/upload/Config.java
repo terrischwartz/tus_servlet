@@ -16,16 +16,17 @@ public class Config
 
 	String[] tusApiExtensions = {"creation", "termination"};
 
-	// Maximum size of a single upload. 0 means unlimited.
+	// Default maximum size of a single upload. 0 means unlimited.
 	long MAX_SIZE = 0L;
 
-	// Maximum total storage space to use.  0 means unlimited (or different policy in use). 
+	// Default maximum total storage space to use.  0 means unlimited (or different policy in use). 
 	long MAX_STORAGE = 0L;
 
-	// Server can limit number of bytes it will accept in a single patch request.  0 means unlimited.
+	// Default value.  Server can limit number of bytes it will accept in a single patch request.  0 means unlimited.
 	long MAX_REQUEST = 0L;
 
-	// Folder where data will be stored.  Must already exist.
+	// Default value. Folder where data will be stored.  Servlet will create the folder if it doesn't exist and
+	// parent dir does exist and permissions allow.  
 	String UPLOAD_FOLDER = "/tmp";
 
 	long maxSize;
@@ -99,9 +100,15 @@ public class Config
 	{
 		String tmp;
 		File file = new File(folder);
-		if (!file.isDirectory() || !file.canWrite() || !file.canRead())
+		if (!file.isDirectory() && !file.mkdir())
 		{
-			tmp = "Upload directory: " + folder + " must exist and be readable and writable";
+			tmp = "Unable to find or create directory " + folder;
+			log.error(tmp);
+			throw new ServletException(tmp);
+		}
+		if (!file.canWrite() || !file.canRead())
+		{
+			tmp = "Upload directory: " + folder + " must be readable and writable";
 			log.error(tmp);
 			throw new ServletException(tmp);
 		}

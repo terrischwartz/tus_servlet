@@ -20,8 +20,8 @@ public class DeleteHandler extends BaseHandler
 	public void go() throws Exception
 	{
 		// Get file ID from url
-		String filename = getFilename();
-		if (filename == null)
+		String id = getID();
+		if (id == null)
 		{
 			log.debug("No file id found in patch url");
 			throw new TusException.NotFound();
@@ -29,33 +29,33 @@ public class DeleteHandler extends BaseHandler
 		boolean locked = false;
 		try
 		{
-			locked = locker.lockUpload(filename);
+			locked = locker.lockUpload(id);
 			if (!locked)
 			{
-				log.info("Couldn't lock " + filename);
+				log.info("Couldn't lock " + id);
 				throw new TusException.FileLocked();
 			}
-			whileLocked(filename);
+			whileLocked(id);
 		}
 		finally
 		{
 			if (locked)
 			{
-				locker.unlockUpload(filename);
+				locker.unlockUpload(id);
 			}
 		}
 	}
 
-	private void whileLocked(String filename)
+	private void whileLocked(String id)
 		throws Exception
 	{
-		FileInfo fileInfo = datastore.getFileInfo(filename);
+		FileInfo fileInfo = datastore.getFileInfo(id);
 		if (fileInfo == null)
 		{
-			log.debug("fileInfo not found for '" + filename + "'");
+			log.debug("fileInfo not found for '" + id + "'");
 			throw new TusException.NotFound();
 		}
-		datastore.terminate(filename);
+		datastore.terminate(id);
 		response.setStatus(Response.NO_CONTENT);
 	}
 

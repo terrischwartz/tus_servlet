@@ -17,10 +17,6 @@ import org.slf4j.LoggerFactory;
 	to exclude "/servlet_path/[0-9a-zA-Z]*".
 	This servlet should only see uris of the form /servlet_path or /servlet_path/123foo , but nothing with
 	special characters or deeper paths.  
-
-	TODO: consider creating a handler for each request.  Code can be more like
-	Jersey's then.  No need to pass request and response between methods.
-
 */
 @SuppressWarnings("serial")
 public class Upload extends HttpServlet 

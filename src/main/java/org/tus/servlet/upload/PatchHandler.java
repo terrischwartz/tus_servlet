@@ -36,8 +36,8 @@ public class PatchHandler extends BaseHandler
 		}
 
 		// Get file ID from url
-		String filename = getFilename();
-		if (filename == null)
+		String id = getID();
+		if (id == null)
 		{
 			log.debug("No file id found in patch url");
 			throw new TusException.NotFound();
@@ -46,30 +46,30 @@ public class PatchHandler extends BaseHandler
 		boolean locked = false;
 		try
 		{
-			locked = locker.lockUpload(filename);
+			locked = locker.lockUpload(id);
 			if (!locked)
 			{
-				log.info("Couldn't lock " + filename);
+				log.info("Couldn't lock " + id);
 				throw new TusException.FileLocked();
 			}
-			whileLocked(filename, offset);
+			whileLocked(id, offset);
 		}
 		finally
 		{
 			if (locked)
 			{
-				locker.unlockUpload(filename);
+				locker.unlockUpload(id);
 			}
 		}
 	}
 
-	private void whileLocked(String filename, long offset)
+	private void whileLocked(String id, long offset)
 		throws Exception
 	{
-		FileInfo fileInfo = datastore.getFileInfo(filename);
+		FileInfo fileInfo = datastore.getFileInfo(id);
 		if (fileInfo == null)
 		{
-			log.debug("fileInfo not found for '" + filename + "'");
+			log.debug("fileInfo not found for '" + id + "'");
 			throw new TusException.NotFound();
 		}
 
@@ -100,14 +100,14 @@ public class PatchHandler extends BaseHandler
 			long maxToRead = contentLength != null ? (long)contentLength : fileInfo.entityLength - offset;
 
 			// Write the data.  
-			long transferred = datastore.write(request, filename, (long)offset, maxToRead);
+			long transferred = datastore.write(request, id, (long)offset, maxToRead);
 			newOffset = transferred + (long)offset; 
 
 			// If upload is complete ...
 			if (newOffset == fileInfo.entityLength)
 			{
-				log.debug("Upload " + filename + " is complete.");
-				datastore.finish(filename);
+				log.debug("Upload " + id + " is complete.");
+				datastore.finish(id);
 			}
 		} 
 		response.setHeader("Upload-Offset", Long.toString(newOffset));

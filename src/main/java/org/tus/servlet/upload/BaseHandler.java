@@ -54,10 +54,10 @@ public abstract class BaseHandler
 	}
 
 	/*
-		Extract filename from URL.  If this returns null it means the URL was invalid.
+		Extract id from URL.  If this returns null it means the URL was invalid.
 		Caller should return 404 not found or BAD_REQUEST?.
 	*/
-	public String getFilename()
+	public String getID()
 	{
 		// Returns everything after the servlet path and before the query string (if any)
 		String pathInfo= request.getPathInfo();
@@ -74,8 +74,8 @@ public abstract class BaseHandler
 			log.debug("URL doesn't have form of an upload endpoint."); 
 			return null;
 		}
-		String filename = matcher.group(1);
-		log.debug("file ID is:" + filename);
-		return filename;
+		String id = matcher.group(1);
+		log.debug("file ID is:" + id);
+		return id;
 	}
 }

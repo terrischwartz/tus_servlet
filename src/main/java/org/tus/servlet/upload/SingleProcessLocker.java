@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 	
 	You need a different Locker if multiple processes are involved.
 */
-class  SingleProcessLocker implements Locker
+public class  SingleProcessLocker implements Locker
 {
 	@SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(SingleProcessLocker.class.getName());
-	private HashSet<String> pool = new HashSet<String>();
+	protected HashSet<String> pool = new HashSet<String>();
 
 	/* 
 		Returns true if able to lock name without waiting.  False if

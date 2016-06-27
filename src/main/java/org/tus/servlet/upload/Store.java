@@ -2,10 +2,14 @@ package org.tus.servlet.upload;
  
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -22,9 +26,10 @@ public class Store implements Datastore
 {
 	protected static final Logger log = LoggerFactory.getLogger(Store.class.getName());
 
-	protected  String binPath;
-	protected  String infoPath;
-	protected  long maxRequest;
+	protected String binPath;
+	protected String infoPath;
+	protected long maxRequest;
+	protected Locker locker;
 	
 	protected static String extensions = "creation,termination";
 
@@ -32,11 +37,12 @@ public class Store implements Datastore
 	
 
 	@Override
-	public void init(Config config) throws Exception
+	public void init(Config config, Locker locker) throws Exception
 	{
-		binPath = config.uploadFolder;
-		infoPath = config.uploadFolder;
-		maxRequest = config.maxRequest;
+		this.binPath = config.uploadFolder;
+		this.infoPath = config.uploadFolder;
+		this.maxRequest = config.maxRequest;
+		this.locker = locker;
 	}
 
 	@Override
@@ -92,10 +98,10 @@ public class Store implements Datastore
 
 	*/
 	@Override
-	public long write(HttpServletRequest request, String filename, long offset, long max)
+	public long write(HttpServletRequest request, String id, long offset, long max)
 		throws Exception
 	{
-		String pathname  = getBinPath(filename);
+		String pathname  = getBinPath(id);
 		File file = new File(pathname );
 		if (!file.exists())
 		{
@@ -110,7 +116,7 @@ public class Store implements Datastore
 		// TODO: check that file offset matches request offset.
 
 		long transferred = 0L;
-		RandomAccessFile raf = new RandomAccessFile(getBinPath(filename), "rw"); // throws if file doesn't exist
+		RandomAccessFile raf = new RandomAccessFile(getBinPath(id), "rw"); // throws if file doesn't exist
 		FileChannel dest = raf.getChannel();
 
 		if (maxRequest > 0L && maxRequest < max)
@@ -159,21 +165,21 @@ public class Store implements Datastore
 		for any cases where we've crashed between delete if ifile and bfile.
 	*/
 	@Override
-	public void terminate(String filename) throws Exception
+	public void terminate(String id) throws Exception
 	{
-		new File(getInfoPath(filename)).delete();
-		new File(getBinPath(filename)).delete();
+		new File(getInfoPath(id)).delete();
+		new File(getBinPath(id)).delete();
 	}
 
 	/*
 		Returns null if info or bin file doesn't exist.
 	*/
 	@Override
-	public FileInfo getFileInfo(String filename)
+	public FileInfo getFileInfo(String id)
 		throws Exception
 	{
-		File ifile = new File(getInfoPath(filename));
-		File bfile = new File(getBinPath(filename));
+		File ifile = new File(getInfoPath(id));
+		File bfile = new File(getBinPath(id));
 
 		if (!ifile.exists() || !bfile.exists())
 		{
@@ -191,6 +197,10 @@ public class Store implements Datastore
 	public void saveFileInfo(FileInfo fileInfo)
 		throws Exception
 	{
+		// to avoid confusion, never store the offset on disk.  We always
+		// get it by stat'ing the .bin file.
+		fileInfo.offset = -1;
+
 		File file = new File(getInfoPath(fileInfo.id));
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(file, fileInfo); 
@@ -198,16 +208,69 @@ public class Store implements Datastore
 	}
 
 	@Override
-	public void finish(String filename) throws Exception { ; } 
+	public void finish(String id) throws Exception { ; } 
 
-	protected String getBinPath(String filename)
+	protected String getBinPath(String id)
 	{
-		return binPath + File.separator + filename + ".bin";
+		return binPath + File.separator + id + ".bin";
 	}
 	
-	protected String getInfoPath(String filename)
+	protected String getInfoPath(String id)
 	{
-		return infoPath + File.separator + filename + ".info";
+		return infoPath + File.separator + id + ".info";
+	}
+
+	// Given full path of .bin or .info file, return the corresponding ID
+	protected String getIDFromFilename(String filename)
+	{
+		String name = (new File(filename)).getName();
+		int pos = name.lastIndexOf(".");
+		if (pos > 0)
+		{
+			name = name.substring(0, pos);
+		}
+		return name;
+	}
+
+	public List<FileInfo> getAllUploads() throws Exception
+	{
+		// Get the names of all the .info files in the upload info dir
+		File dir = new File(infoPath);
+		File [] files = dir.listFiles(new FilenameFilter() 
+		{
+			@Override
+				public boolean accept(File dir, String name) 
+				{
+					return name.endsWith(".info");
+				}
+		});
+
+		// Read the .info files and return them in a list of fileInfos.
+		ArrayList<FileInfo> fiList = new ArrayList<FileInfo>();
+		for (File file : files)
+		{
+			FileInfo fi = getFileInfo(getIDFromFilename(file.getAbsolutePath()));
+			if (fi != null)
+			{
+				fiList.add(fi);
+			} 
+		}
+		return fiList;
+	}
+
+	public List<FileInfo> getCompletedUploads() throws Exception
+	{
+		List<FileInfo> fiList = getAllUploads();
+		Iterator<FileInfo> it = fiList.iterator();
+		while(it.hasNext())
+		{
+			FileInfo fileInfo = it.next();
+			if (fileInfo.offset < fileInfo.entityLength) 
+			{
+				it.remove();
+			}
+		}
+		return fiList;
 	}
 
 }
