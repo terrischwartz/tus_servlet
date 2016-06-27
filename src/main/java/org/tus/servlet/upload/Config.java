@@ -62,13 +62,13 @@ public class Config
 		uploadFolder = (tmp == null)? UPLOAD_FOLDER : tmp;
 		validateFolder(uploadFolder);
 
-		l = getLongValue(properties.getProperty("maxFileSize"));
+		l = getLongValue("maxFileSize");
 		maxSize = (l == null) ? MAX_SIZE : l;
 
-		l = getLongValue(properties.getProperty("maxStorage"));
+		l = getLongValue("maxStorage");
 		maxStorage = (l == null) ? MAX_STORAGE : l;
 
-		l = getLongValue(properties.getProperty("maxRequest"));
+		l = getLongValue("maxRequest");
 		maxRequest = (l == null) ? MAX_REQUEST : l;
 
 		datastoreProvider = properties.getProperty("datastoreProvider");
@@ -136,22 +136,28 @@ public class Config
 		}
 	}
 
-	protected Long getLongValue(String text) throws ServletException
+	public String getStringValue(String name) throws ServletException
+	{
+		return allProperties.getProperty(name);
+	}
+
+	public Long getLongValue(String name) throws ServletException
 	{
 		String msg;
-		if (text == null)
+		String value = allProperties.getProperty(name);
+		if (value == null)
 		{
 			return null;
 		}
-		Long value = null;
+		Long longValue = null;
 		try
 		{
-			value = new  Long(text);
-			return value;
+			longValue = new  Long(value);
+			return longValue;
 		}
 		catch(NumberFormatException ne)
 		{
-			msg = "Parameter must be a long.  Error parsing: " + text;
+			msg = "Parameter must be a long.  Error parsing: " + value;
 			throw new ServletException(msg);
 		}
 	}
