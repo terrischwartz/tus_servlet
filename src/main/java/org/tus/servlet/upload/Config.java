@@ -1,12 +1,14 @@
 package org.tus.servlet.upload;
 
 import java.io.File;
+import java.util.Enumeration;
 import java.util.Properties;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
  
 public class Config
 {
@@ -16,24 +18,27 @@ public class Config
 
 	String[] tusApiExtensions = {"creation", "termination"};
 
-	// Default maximum size of a single upload. 0 means unlimited.
+	//Maximum size of a single upload. 0 means unlimited.
 	long MAX_SIZE = 0L;
 
-	// Default maximum total storage space to use.  0 means unlimited (or different policy in use). 
+	//Maximum total storage space to use.  0 means unlimited (or different policy in use). 
 	long MAX_STORAGE = 0L;
 
-	// Default value.  Server can limit number of bytes it will accept in a single patch request.  0 means unlimited.
+	//Server can limit number of bytes it will accept in a single patch request.  0 means unlimited.
 	long MAX_REQUEST = 0L;
 
 	// Default value. Folder where data will be stored.  Servlet will create the folder if it doesn't exist and
 	// parent dir does exist and permissions allow.  
 	String UPLOAD_FOLDER = "/tmp";
 
-	long maxSize;
-	long maxStorage;
-	long maxRequest;
-	String uploadFolder;
-	String datastoreProvider;
+	public long maxSize;
+	public long maxStorage;
+	public long maxRequest;
+	public String uploadFolder;
+	public String datastoreProvider;
+
+	// Derived classes may need additional configuration.
+	public Properties allProperties = new Properties(); 
 
 
 	public Config() throws ServletException 
@@ -50,6 +55,8 @@ public class Config
 	{
 		String tmp;
 		Long l; 
+
+		this.allProperties.putAll(properties);
 
 		tmp = properties.getProperty("uploadFolder");
 		uploadFolder = (tmp == null)? UPLOAD_FOLDER : tmp;
@@ -73,6 +80,20 @@ public class Config
     public Config(ServletConfig sc) throws ServletException 
     {
 		Properties properties = new Properties();
+		@SuppressWarnings("unchecked")
+		Enumeration<String> names =  sc.getInitParameterNames();
+		while (names.hasMoreElements())
+		{
+			String name = names.nextElement();
+			String value = sc.getInitParameter(name);
+			if (value != null)
+			{
+				properties.setProperty(name, value); 
+			}
+		}
+
+		/*
+		Properties properties = new Properties();
 		if (sc.getInitParameter("uploadFolder") != null)
 		{
 			properties.setProperty("uploadFolder", sc.getInitParameter("uploadFolder"));
@@ -93,10 +114,11 @@ public class Config
 		{
 			properties.setProperty("datastoreProvider", sc.getInitParameter("datastoreProvider"));
 		}
+		*/
 		init(properties);
    	} 
 	
-	void validateFolder(String folder) throws ServletException
+	protected void validateFolder(String folder) throws ServletException
 	{
 		String tmp;
 		File file = new File(folder);
@@ -114,7 +136,7 @@ public class Config
 		}
 	}
 
-	Long getLongValue(String text) throws ServletException
+	protected Long getLongValue(String text) throws ServletException
 	{
 		String msg;
 		if (text == null)

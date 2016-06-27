@@ -3,7 +3,10 @@
 SIZE=2299
 FILE="./testdata.txt"
 
-URL=$(curl -X POST -i $TUS_URL -H 'Tus-Resumable: 1.0.0'  -H "Upload-Length: $SIZE" |  \
+OUTPUT=$(curl -X POST -i $TUS_URL -H 'Tus-Resumable: 1.0.0'  -H "Upload-Length: $SIZE" ) 
+echo "$OUTPUT"
+
+URL=$(echo "$OUTPUT" | \
 	grep 'Location:' |  \
 	sed "s/$(printf '\r')\$//" | \
 	awk '{print $2}')
